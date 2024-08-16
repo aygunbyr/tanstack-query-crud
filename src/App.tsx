@@ -1,10 +1,10 @@
 // src/App.tsx
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPosts, createPost, updatePost, deletePost } from "./api";
+import { getTodos, createTodo, updateTodo, deleteTodo } from "./api";
 
-export interface Post {
-  id: number;
+export interface Todo {
+  id: string;
   title: string;
   body: string;
   userId: number;
@@ -12,78 +12,78 @@ export interface Post {
 
 function App() {
   const queryClient = useQueryClient();
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [title, setTitle] = useState<string>("");
   const [body, setBody] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
 
-  // Fetch Posts
+  // Fetch Todos
   const {
-    data: posts,
+    data: todos,
     isLoading,
     isError,
-  } = useQuery<Post[]>({
-    queryKey: ["posts"],
-    queryFn: getPosts,
+  } = useQuery<Todo[]>({
+    queryKey: ["todos"],
+    queryFn: getTodos,
   });
 
-  // Create Post Mutation
-  const createPostMutation = useMutation<Post, unknown, Omit<Post, "id">>({
-    mutationFn: (post: Omit<Post, "id">) => createPost(post),
+  // Create Todo Mutation
+  const createTodoMutation = useMutation<Todo, unknown, Omit<Todo, "id">>({
+    mutationFn: (todo: Omit<Todo, "id">) => createTodo(todo),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
 
-  // Update Post Mutation
-  const updatePostMutation = useMutation<Post, unknown, Post>({
-    mutationFn: (post: Post) => updatePost(post),
+  // Update Todo Mutation
+  const updateTodoMutation = useMutation<Todo, unknown, Todo>({
+    mutationFn: (todo: Todo) => updateTodo(todo),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      setSelectedPost(null); // formu temizle
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
+      setSelectedTodo(null); // formu temizle
     },
   });
 
-  // Delete Post Mutation
-  const deletePostMutation = useMutation<void, unknown, number>({
-    mutationFn: (id: number) => deletePost(id),
+  // Delete Todo Mutation
+  const deleteTodoMutation = useMutation<unknown, unknown, string>({
+    mutationFn: (id: string) => deleteTodo(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPost) {
-      // Update Post
-      updatePostMutation.mutate({
-        id: selectedPost.id,
+    if (selectedTodo) {
+      // Update Todo
+      updateTodoMutation.mutate({
+        id: selectedTodo.id,
         title,
         body,
         userId: parseInt(userId),
       });
     } else {
-      // Create Post
-      createPostMutation.mutate({
+      // Create Todo
+      createTodoMutation.mutate({
         title,
         body,
         userId: parseInt(userId),
-      } as Omit<Post, "id">);
+      } as Omit<Todo, "id">);
     }
     setTitle("");
     setBody("");
     setUserId("");
   };
 
-  const handleDelete = (id: number) => {
-    deletePostMutation.mutate(id);
+  const handleDelete = (id: string) => {
+    deleteTodoMutation.mutate(id);
   };
 
-  const handleEdit = (post: Post) => {
-    setSelectedPost(post);
-    setTitle(post.title);
-    setBody(post.body);
-    setUserId(post.userId.toString());
+  const handleEdit = (todo: Todo) => {
+    setSelectedTodo(todo);
+    setTitle(todo.title);
+    setBody(todo.body);
+    setUserId(todo.userId.toString());
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -92,7 +92,15 @@ function App() {
   return (
     <div>
       <h1>TanStack Query CRUD</h1>
-      <form onSubmit={handleSubmit}>
+      <form
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: "10px",
+        }}
+        onSubmit={handleSubmit}
+      >
         <input
           type="text"
           placeholder="Title"
@@ -102,6 +110,7 @@ function App() {
         <textarea
           placeholder="Body"
           value={body}
+          rows={3}
           onChange={(e) => setBody(e.target.value)}
         />
         <input
@@ -111,18 +120,18 @@ function App() {
           onChange={(e) => setUserId(e.target.value)}
         />
         <button type="submit">
-          {selectedPost ? "Update Post" : "Add Post"}
+          {selectedTodo ? "Update Todo" : "Add Todo"}
         </button>
       </form>
 
       <ul>
-        {posts?.map((post: Post) => (
-          <li key={post.id}>
-            <h3>{post.title}</h3>
-            <p>{post.body}</p>
-            <p>{post.userId}</p>
-            <button onClick={() => handleEdit(post)}>Edit</button>
-            <button onClick={() => handleDelete(post.id)}>Delete</button>
+        {todos?.map((todo: Todo) => (
+          <li key={todo.id}>
+            <h3>{todo.title}</h3>
+            <p>{todo.body}</p>
+            <p>User #{todo.userId}</p>
+            <button onClick={() => handleEdit(todo)}>Edit</button>
+            <button onClick={() => handleDelete(todo.id)}>Delete</button>
           </li>
         ))}
       </ul>

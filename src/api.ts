@@ -1,40 +1,40 @@
 // src/api.ts
 import axios from "axios";
-import type { Post } from "./App";
+import type { Todo } from "./App";
 
 const api = axios.create({
-  baseURL: "https://jsonplaceholder.typicode.com",
+  baseURL: "http://localhost:3500",
 });
 
-// Fetch all posts
-export const getPosts = async (): Promise<Post[]> => {
-  const response = await api.get<Post[]>("/posts");
+// Fetch all todos
+export const getTodos = async (): Promise<Todo[]> => {
+  const response = await api.get<Todo[]>("/todos");
   return response.data;
 };
 
-// Fetch a single post by ID
-export const getPostById = async (id: number): Promise<Post> => {
-  const response = await api.get<Post>(`/posts/${id}`);
+// Fetch a single todo by ID
+export const getTodoById = async (id: number): Promise<Todo> => {
+  const response = await api.get<Todo>(`/todos/${id}`);
   return response.data;
 };
 
-// Create a new post
-export const createPost = async (post: Omit<Post, "id">): Promise<Post> => {
-  const response = await api.post<Post>("/posts", post);
+// Create a new todo
+export const createTodo = async (todo: Omit<Todo, "id">): Promise<Todo> => {
+  const response = await api.post<Todo>("/todos", todo);
   console.log(response.data);
   return response.data;
 };
 
-// Update a post
-export const updatePost = async (post: Post): Promise<Post> => {
-  const response = await api.put<Post>(`/posts/${post.id}`, post);
+// Update a todo
+export const updateTodo = async (todo: Todo): Promise<Todo> => {
+  const response = await api.put<Todo>(`/todos`, todo);
   console.log(response.data);
   return response.data;
 };
 
-// Delete a post
-export const deletePost = async (id: number): Promise<void> => {
-  const response = await api.delete(`/posts/${id}`);
-  console.log(response.data);
-  return response.data;
+// Delete a todo
+export const deleteTodo = async (id: string): Promise<unknown> => {
+  const response = await api.delete(`/todos/${id}`);
+  console.log(response);
+  return response;
 };
